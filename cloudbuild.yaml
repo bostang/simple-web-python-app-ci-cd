@@ -37,4 +37,4 @@ images:
 - 'gcr.io/${PROJECT_ID}/python-web-app:${COMMIT_SHA}'
 
 options:
-  logging: NONE
+  logging: CLOUD_LOGGING_ONLY
