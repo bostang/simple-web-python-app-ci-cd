@@ -1,24 +1,26 @@
 # cloudbuild.yaml
 steps:
 # Langkah 1: Membangun image Docker
+# Menggunakan format Artifact Registry: LOCATION-docker.pkg.dev/PROJECT_ID/REPOSITORY_NAME/IMAGE_NAME:TAG
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['build', '-t', 'gcr.io/${PROJECT_ID}/python-web-app:${COMMIT_SHA}', '.']
+  args: ['build', '-t', 'asia-southeast2-docker.pkg.dev/${PROJECT_ID}/python-web-app-repo/python-web-app:${COMMIT_SHA}', '.']
   id: 'Build Docker Image'
 
 # Langkah 2: Mendorong image Docker ke Google Artifact Registry
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['push', 'gcr.io/${PROJECT_ID}/python-web-app:${COMMIT_SHA}']
+  args: ['push', 'asia-southeast2-docker.pkg.dev/${PROJECT_ID}/python-web-app-repo/python-web-app:${COMMIT_SHA}']
   id: 'Push to Artifact Registry'
 
 # Langkah 3: Mengganti placeholder image di deployment.yaml dengan image yang baru dibangun
 # Menggunakan sed untuk mengganti string 'gcr.io/PROJECT_ID/python-web-app:latest'
 # dengan image yang baru saja di-push (menggunakan COMMIT_SHA sebagai tag versi)
+# Perhatikan bahwa placeholder di deployment.yaml juga akan diubah ke format Artifact Registry.
 - name: 'gcr.io/cloud-builders/gcloud'
   entrypoint: 'bash'
   args:
     - '-c'
     - |
-      sed -i "s|gcr.io/PROJECT_ID/python-web-app:latest|gcr.io/${PROJECT_ID}/python-web-app:${COMMIT_SHA}|g" deployment.yaml
+      sed -i "s|gcr.io/PROJECT_ID/python-web-app:latest|asia-southeast2-docker.pkg.dev/${PROJECT_ID}/python-web-app-repo/python-web-app:${COMMIT_SHA}|g" deployment.yaml
   id: 'Update Deployment Image'
 
 # Langkah 4: Melakukan deployment ke cluster Kubernetes
@@ -34,7 +36,9 @@ steps:
 
 # Image yang akan disimpan di Artifact Registry
 images:
-- 'gcr.io/${PROJECT_ID}/python-web-app:${COMMIT_SHA}'
+- 'asia-southeast2-docker.pkg.dev/${PROJECT_ID}/python-web-app-repo/python-web-app:${COMMIT_SHA}'
 
 options:
-  logging: CLOUD_LOGGING_ONLY
+  # Mengatasi masalah logging dengan menginstruksikan Cloud Build untuk menggunakan
+  # bucket log yang dimiliki pengguna di region yang sama.
+  defaultLogsBucketBehavior: REGIONAL_USER_OWNED_BUCKET
