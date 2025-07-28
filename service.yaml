@@ -1,0 +1,16 @@
+# service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: python-web-app-service
+  labels:
+    app: python-web-app
+spec:
+  selector:
+    app: python-web-app
+  type: LoadBalancer # Menggunakan LoadBalancer untuk eksposur eksternal
+  ports:
+  - protocol: TCP
+    port: 80 # Port service yang akan diakses dari luar cluster
+    targetPort: 8080 # Port container yang diekspos oleh aplikasi
+
