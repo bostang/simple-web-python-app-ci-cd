@@ -120,5 +120,7 @@ gcloud projects add-iam-policy-binding $PROJECT_ID \
     # etag: BwY6-hyq9xE=
     # version: 1
 
-```
+# HUBUNGKAN Repositori git ke Cloud Build
+    # Cloud Build > Triggers.
 
+```
